@@ -8,21 +8,7 @@ Ters ERP is a state-of-the-art, open-source Enterprise Resource Planning suite o
 
 ---
 
-## 🏛️ The Big 5 Functional Modules | الوحدات الوظيفية الخمس الكبرى
-
-Ters ERP is built around five core pillars that run the entire business cycle with real-time automated ledger posting:
-
-تتمحور قوة نظام **ترس** حول خمسة محاور رئيسية تدير الدورة التشغيلية والمالية للمنشأة بالكامل مع ترحيل محاسبي فوري وآلي:
-
-```mermaid
-graph TD
-    Sales[1. Sales & Invoicing] -->|Auto Journal Posting| GL[5. General Ledger]
-    Purchases[2. Purchases & Vendors] -->|Auto Journal Posting| GL
-    Inventory[3. Inventory & Stock] -->|Auto Stock Posting| GL
-    HR[4. HR & Payroll] -->|Auto Payroll Posting| GL
-```
-
----
+## 🌟 مميزات ترس المحاسبي | Features of Ters ERP
 
 ### 1. General Ledger & Double-Entry Accounting | المحاسبة العامة والقيود المزدوجة
 * **Bilingual Chart of Accounts (دليل الحسابات الشجري)**: A dynamic, multi-level tree structure organizing Assets, Liabilities, Equity, Revenues, and Expenses.
@@ -31,7 +17,7 @@ graph TD
 
 ### 2. Sales & Accounts Receivable | المبيعات وفواتير العملاء
 * **Customer Catalog (دليل العملاء)**: Dynamic profiles tracking transaction history, billing settings, and credit balances.
-* **Automated Sales Invoicing (فواتير المبيعات المؤتمتة)**: Create professional sales invoices that automatically calculate taxes, record sales, and post double-entry entries:
+* **Automated Sales Invoicing (فواتير Mبيعات المؤتمتة)**: Create professional sales invoices that automatically calculate taxes, record sales, and post double-entry entries:
   * **Debit**: Customer Account (Receivable)
   * **Credit**: Revenue & Tax Accounts
 * **Payment Tracking (متابعة التحصيلات)**: Easily record payments to clear outstanding customer balances in real-time.
@@ -93,6 +79,22 @@ npm run dev
 
 * **[Custom Domain & Reverse Proxy Setup Guide (Option 2)](docs/reverse_proxy_setup.md)**: A complete step-by-step guide with ready-to-use IIS and Nginx scripts to bind your local Ters ERP service to a custom domain (e.g., `https://ters-erp.yourdomain.com`).
 * **[دليل إعداد النطاق المخصص والخادم الوكيل العكسي](docs/reverse_proxy_setup.md)**: دليل إعداد خطوة بخطوة باللغة الإنجليزية مع السكربتات البرمجية الجاهزة لخوادم IIS و Nginx لربط خادم نظام ترس المحاسبي بنطاق مخصص لشركتك.
+
+---
+
+## 🤝 Contributing | المساهمة في المشروع
+
+Ters ERP is an open-source project, and we welcome contributions from developers, accountants, translators, and designers worldwide! 
+
+نظام **ترس المحاسبي** هو مشروع مفتوح المصدر بالكامل، ونرحب بمساهمات المطورين، المحاسبين، المترجمين، والمصممين من جميع أنحاء العالم للارتقاء بالنظام!
+
+### How to Contribute | كيف يمكنك المساهمة؟
+1. **Fork the repository** and create your branch from `main`.
+   قم بعمل **Fork** للمستودع وأنشئ فرعك الخاص (Branch) من الفرع الرئيسي `main`.
+2. **Submit a Pull Request (PR)** with clear documentation of your changes or features.
+   قم بتقديم طلب دمج **(Pull Request)** يوضح التغييرات أو الميزات الجديدة المضافة بالتفصيل.
+3. **Report bugs & suggest features** by opening a GitHub Issue.
+   قم بالإبلاغ عن الأخطاء أو تقديم اقتراحات لميزات جديدة عبر فتح **Issue** على جيت هب.
 
 ---
 
