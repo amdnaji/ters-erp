@@ -1,36 +1,67 @@
 # Ters ERP | ترس المحاسبي
+### Modern, Lightweight, Bilingual ERP Suite for SMEs
+### نظام تخطيط موارد المؤسسات الحديث والمبتكر للمنشآت الصغيرة والمتوسطة
 
-Ters ERP is a state-of-the-art, open-source Enterprise Resource Planning system specifically optimized for Small and Medium Enterprises (SMEs) with dynamic multi-tenancy (SaaS) and bilingual isolation (Arabic & English). 
+Ters ERP is a state-of-the-art, open-source Enterprise Resource Planning suite optimized for Small and Medium Enterprises (SMEs). Built with absolute bilingual isolation (Arabic & English), dynamic multi-tenancy (SaaS), and seamless database support, it provides high-performance double-entry financial controls with zero installation friction.
 
-نظام **ترس المحاسبي** هو نظام تخطيط موارد المؤسسات (ERP) حديث ومفتوح المصدر، مصمم خصيصاً للمنشآت الصغيرة والمتوسطة. يدعم النظام تعدد الشركات والمستأجرين (SaaS) بشكل معزول وآمن بالكامل، مع واجهات وتجربة مستخدم ممتازة تدعم اللغتين العربية والإنجليزية بشكل منفصل ونظيف.
+نظام **ترس المحاسبي** هو نظام متطور ومتكامل لتخطيط موارد المؤسسات (ERP)، مصمم خصيصاً لتلبية احتياجات المنشآت الصغيرة والمتوسطة. يتميز النظام بدعم كامل لعزل اللغتين (العربية والإنجليزية) بشكل نظيف، وتعدد المستأجرين (SaaS)، مع واجهات استخدام حديثة وأداء مالي دقيق قائم على مبادئ المحاسبة المزدوجة القياسية.
 
 ---
 
-## 🌟 Key Features | أبرز المميزات
+## 🏛️ The Big 5 Functional Modules | الوحدات الوظيفية الخمس الكبرى
 
-### 1. General Ledger & Double-Entry Accounting | المحاسبة العامة والقيود اليومية
-* **Chart of Accounts (دليل الحسابات الشجري):** A highly flexible dynamic tree structure to manage Assets, Liabilities, Equity, Revenues, and Expenses.
-* **Double-Entry Journal Entries (القيود المحاسبية المزدوجة):** Record vouchers with real-time balance safety checks (Debits = Credits).
-* **Bilingual Arabic/English Primary UI (لغة عربية أساسية ولغة إنجليزية ثانوية):** Fluid conversion without mixed-context brackets.
+Ters ERP is built around five core pillars that run the entire business cycle with real-time automated ledger posting:
 
-### 2. Multi-Tenant SaaS Isolation | عزل تام وآمن للمستأجرين (SaaS)
-* Out-of-the-box tenant schema isolation. Each company operates in its own logical space with 100% separate accounting data.
+تتمحور قوة نظام **ترس** حول خمسة محاور رئيسية تدير الدورة التشغيلية والمالية للمنشأة بالكامل مع ترحيل محاسبي فوري وآلي:
 
-### 3. Granular Permission Matrix (RBAC) | مصفوفة الصلاحيات والأمان
-* Create custom roles (Accountant, Auditor, Cashier) and assign specific CRUD (Read, Create, Update, Delete) permissions per subsystem.
-* Provision new user accounts and automatically hash passwords using ASP.NET Identity architecture.
+```mermaid
+graph TD
+    Sales[1. Sales & Invoicing] -->|Auto Journal Posting| GL[5. General Ledger]
+    Purchases[2. Purchases & Vendors] -->|Auto Journal Posting| GL
+    Inventory[3. Inventory & Stock] -->|Auto Stock Posting| GL
+    HR[4. HR & Payroll] -->|Auto Payroll Posting| GL
+```
 
-### 4. Live Financial Statements | التقارير والقوائم المالية الفورية
-* Real-time generation of **Income Statements (قائمة الدخل)**, **Balance Sheets (الميزانية العمومية)**, and **Trial Balance (ميزان المراجعة)** directly from active ledger posts.
+---
+
+### 1. General Ledger & Double-Entry Accounting | المحاسبة العامة والقيود المزدوجة
+* **Bilingual Chart of Accounts (دليل الحسابات الشجري)**: A dynamic, multi-level tree structure organizing Assets, Liabilities, Equity, Revenues, and Expenses.
+* **Balanced Vouchers (القيود المحاسبية المزدوجة)**: Real-time balance safety verification (Debits must equal Credits) for manual and automated ledger entries.
+* **Live Financial Statements (التقارير والقوائم الفورية)**: Generates instant **Income Statements (قائمة الدخل)**, **Balance Sheets (الميزانية العمومية)**, and **Trial Balances (ميزان المراجعة)** directly from posted transactions.
+
+### 2. Sales & Accounts Receivable | المبيعات وفواتير العملاء
+* **Customer Catalog (دليل العملاء)**: Dynamic profiles tracking transaction history, billing settings, and credit balances.
+* **Automated Sales Invoicing (فواتير المبيعات المؤتمتة)**: Create professional sales invoices that automatically calculate taxes, record sales, and post double-entry entries:
+  * **Debit**: Customer Account (Receivable)
+  * **Credit**: Revenue & Tax Accounts
+* **Payment Tracking (متابعة التحصيلات)**: Easily record payments to clear outstanding customer balances in real-time.
+
+### 3. Purchases & Accounts Payable | المشتريات وفواتير الموردين
+* **Vendor Directory (دليل الموردين الكلي)**: Manage comprehensive vendor profiles, contact details, and payment histories.
+* **Purchase Bills Integration (إدارة فواتير الشراء)**: Record vendor invoices to update stock levels and dynamically create double-entry ledger vouchers:
+  * **Debit**: Inventory Assets or Expense Accounts
+  * **Credit**: Vendor Account (Payable) & Input Tax
+* **Payable Control (الرقابة الدائنة)**: Track outstanding payables, due dates, and record cash/bank disbursements to vendors.
+
+### 4. Inventory & Dynamic Stock Control | إدارة المستودعات والمخزون الذكي
+* **Product Catalog & SKU Tracking (دليل المنتجات والباركود)**: Centralized inventory catalog with dynamic pricing, SKUs, and category structures.
+* **Automatic Stock Adjustment (التحكم التلقائي بالمخزون)**: Stock levels automatically adjust in real-time based on sales invoices and purchase bills.
+* **Cost of Goods Sold - COGS (حساب تكلفة المبيعات)**: Real-time calculations of COGS upon posting sales invoices, ensuring accurate gross profit tracking on every financial statement.
+
+### 5. HR Management & Automated Payroll | الموارد البشرية والرواتب الذكية
+* **Employee Master Directory (سجل الموظفين الموحد)**: Digital profiles for staff, including salary structures, departments, and hiring data.
+* **Smart Payroll Slip Generator (مسير الرواتب الذكي)**: Generate monthly pay slips with automated double-entry postings to reflect staff expenses and liabilities:
+  * **Debit**: Salary and Wage Expenses
+  * **Credit**: Accrued Payroll Liabilities or Cash/Bank Accounts
+* **Attendance and Pay Cycles (دورات الدفع والرواتب)**: Standardized accounting periods for smooth monthly closing.
 
 ---
 
 ## 💻 Tech Stack | التقنيات المستخدمة
 
-* **Backend (الخلفية):** .NET 9.0 Core Web API, Entity Framework Core.
-* **Database (قاعدة البيانات):** PostgreSQL.
+* **Backend (الخلفية):** .NET 9.0 Core Web API, Entity Framework Core, SQLite (for dynamic local trial) & PostgreSQL (for production Enterprise SaaS).
 * **Frontend (الواجهة):** React (TypeScript), Vite, Tailwind CSS / Vanilla CSS, Lucide Icons.
-* **Security (الأمان):** Cookie authentication, Tenant-based isolation, Role-based claims mapping.
+* **Deployment (التوزيع):** Wix Toolset v4/v5 standalone Windows MSI installer, silent background Windows Service (`TersERP`), and native C# silent GUI launcher.
 
 ---
 
@@ -41,27 +72,22 @@ Ters ERP is a state-of-the-art, open-source Enterprise Resource Planning system 
 * [Node.js (v18+)](https://nodejs.org/)
 * [PostgreSQL Database Server](https://www.postgresql.org/)
 
-### 1. Database Connection | إعداد قاعدة البيانات
-Configure your connection string in [appsettings.json](file:///c:/dotnetproject/ters-erp/src/TersErp.Api/appsettings.json):
-```json
-"ConnectionStrings": {
-  "DefaultConnection": "Host=localhost;Database=ters_erp;Username=postgres;Password=your_password"
-}
-```
-
-### 2. Run the Backend | تشغيل النظام الخلفي
+### 1. Run the Backend | تشغيل النظام الخلفي
+Configure your database connection string in [appsettings.json](file:///c:/dotnetproject/ters-erp/src/TersErp.Api/appsettings.json) and run:
 ```bash
 cd src/TersErp.Api
 dotnet ef database update
-dotnet run
+dotnet run --no-launch-profile
 ```
 
-### 3. Run the Frontend Client | تشغيل النظام الأمامي
+### 2. Run the Frontend Client | تشغيل النظام الأمامي
 ```bash
 cd src/terserp.client
 npm install
 npm run dev
 ```
+
+---
 
 ## 📚 Documentation & Advanced Guides | المستندات والأدلة المتقدمة
 
