@@ -1,0 +1,122 @@
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+     xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
+     
+  <Package ProductCode="d50c18d0-e14a-4e2a-89b9-8c76395b05ad"
+           Name="Ters ERP" 
+           Manufacturer="Ters" 
+           Version="0.1.0" 
+           UpgradeCode="9b87df33-3d02-4b2a-bf3b-2877a2cb58ab" 
+           Language="1033">
+           
+    <MajorUpgrade DowngradeErrorMessage="A newer version of Ters ERP is already installed." />
+    
+    <MediaTemplate EmbedCab="yes" />
+
+    <!-- Custom Icon Settings -->
+    <Icon Id="TersIcon" SourceFile="logo.ico" />
+    <Property Id="ARPPRODUCTICON" Value="TersIcon" />
+
+    <!-- Launch browser to URL on Exit Settings -->
+    <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOX" Value="1"/>
+    <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOXTEXT" Value="Launch Ters ERP after installation" />
+
+    <!-- Custom Action to launch browser dynamically via the native silent GUI launcher -->
+    <CustomAction Id="LaunchApplication" 
+                  FileRef="TersLauncherExe" 
+                  ExeCommand="" 
+                  Return="asyncNoWait" />
+
+    <!-- Standard Wix UI dialog set enabling custom features selection and exit launch -->
+    <UI>
+      <ui:WixUI Id="WixUI_FeatureTree" />
+      <Publish Dialog="ExitDialog" 
+               Control="Finish" 
+               Event="DoAction" 
+               Value="LaunchApplication" 
+               Condition="WIXUI_EXITDIALOGOPTIONALCHECKBOX = 1 and NOT Installed"/>
+    </UI>
+
+    <!-- Directory Layout -->
+    <StandardDirectory Id="ProgramFiles64Folder">
+      <Directory Id="INSTALLFOLDER" Name="Ters ERP" />
+    </StandardDirectory>
+
+    <StandardDirectory Id="DesktopFolder" />
+
+    <StandardDirectory Id="ProgramMenuFolder">
+      <Directory Id="ApplicationProgramsFolder" Name="Ters ERP" />
+    </StandardDirectory>
+
+    <!-- Components -->
+    <ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
+      <!-- Main Application Executable, Service Installer, and Start Menu Shortcut -->
+      <Component Id="TersApiComponent" Guid="f8dbde65-c335-4cb8-8c19-94b1a45778b8">
+        <File Id="TersApiExe" Source="publish\TersErp.Api.exe" KeyPath="yes" />
+        <File Id="TersLauncherExe" Source="publish\TersErp.Launcher.exe" />
+        
+        <!-- Register the C# Backend as a Windows Service to run silently in the background -->
+        <ServiceInstall Id="ServiceInstaller"
+                        Type="ownProcess"
+                        Name="TersERP"
+                        DisplayName="Ters ERP Service"
+                        Description="Silent background web server hosting the Ters ERP multi-tenant SaaS suite."
+                        Start="auto"
+                        ErrorControl="normal" />
+
+        <!-- Control the service state during install, uninstall, and upgrades -->
+        <ServiceControl Id="ServiceController"
+                        Name="TersERP"
+                        Start="install"
+                        Stop="both"
+                        Remove="uninstall"
+                        Wait="yes" />
+
+        <!-- Start Menu Shortcut pointing directly to the native silent GUI launcher -->
+        <Shortcut Id="StartMenuShortcut" 
+                  Target="[!TersLauncherExe]"
+                  Name="Ters ERP" 
+                  Directory="ApplicationProgramsFolder" 
+                  WorkingDirectory="INSTALLFOLDER"
+                  Icon="TersIcon" />
+      </Component>
+
+      <!-- Harvest all other published files recursively -->
+      <Files Include="publish\**">
+        <Exclude Files="publish\TersErp.Api.exe" />
+        <Exclude Files="publish\TersErp.Launcher.exe" />
+      </Files>
+    </ComponentGroup>
+
+    <!-- Optional Desktop Shortcut Component pointing to the browser address silently -->
+    <DirectoryRef Id="INSTALLFOLDER">
+      <Component Id="DesktopShortcutComponent" Guid="d6a2f87a-3642-4f32-8419-61abef2382f7">
+        <RegistryValue Root="HKCU" Key="Software\Ters\TersERP" Name="desktopShortcut" Type="integer" Value="1" KeyPath="yes" />
+        <Shortcut Id="DesktopShortcut" 
+                  Target="[!TersLauncherExe]"
+                  Name="Ters ERP" 
+                  Directory="DesktopFolder" 
+                  WorkingDirectory="INSTALLFOLDER"
+                  Icon="TersIcon" />
+      </Component>
+    </DirectoryRef>
+
+    <!-- Clean up shortcuts folder on uninstall -->
+    <DirectoryRef Id="ApplicationProgramsFolder">
+      <Component Id="CleanupShortcuts" Guid="a65fdbde-379e-4b68-809b-648b7890cc32">
+        <RemoveFolder Id="CleanupApplicationProgramsFolder" On="uninstall" />
+        <RegistryValue Root="HKCU" Key="Software\Ters\TersERP" Name="installed" Type="integer" Value="1" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+
+    <!-- Installation Features -->
+    <!-- AllowAbsent="no" forces the main engine to be installed -->
+    <Feature Id="MainFeature" Title="Ters ERP Core Service Engine" Level="1" AllowAbsent="no" Description="Installs the core ERP background web service and general ledger accounting system.">
+      <ComponentGroupRef Id="ProductComponents" />
+      <ComponentRef Id="CleanupShortcuts" />
+    </Feature>
+
+    <Feature Id="DesktopShortcutFeature" Title="Desktop Shortcut" Description="Create a shortcut icon for Ters ERP on your desktop screen for quick browser access." Level="1">
+      <ComponentRef Id="DesktopShortcutComponent" />
+    </Feature>
+  </Package>
+</Wix>

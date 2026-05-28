@@ -1,0 +1,104 @@
+name: Compile & Release Ters ERP MSI Installer
+
+on:
+  push:
+    tags:
+      - 'v*' # Triggers on push of tags starting with 'v' (e.g. v0.1.0-beta.1)
+
+permissions:
+  contents: write # Required to create the GitHub Release and upload assets
+
+jobs:
+  build-and-release:
+    name: Build Frontend, Backend & Package MSI
+    runs-on: windows-latest
+
+    steps:
+      # 1. Checkout codebase
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      # 2. Setup Node.js environment
+      - name: Setup Node.js (v20)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      # 3. Compile React SPA Frontend
+      - name: Build React Frontend Assets
+        run: |
+          cd src/terserp.client
+          npm ci
+          npm run build
+
+      # 4. Setup .NET SDK environment
+      - name: Setup .NET 9.0 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      # 5. Publish Standalone Backend Engine (win-x64 self-contained)
+      - name: Publish Self-Contained Backend API
+        run: |
+          dotnet publish src/TersErp.Api/TersErp.Api.csproj -c Release -r win-x64 --self-contained true -o publish /p:PublishSingleFile=false /p:PublishReadyToRun=false
+
+      # 6. Publish Native Silent GUI Launcher
+      - name: Publish Native GUI Launcher
+        run: |
+          dotnet publish src/TersErp.Launcher/TersErp.Launcher.csproj -c Release -r win-x64 --self-contained true -o publish /p:PublishSingleFile=true /p:PublishReadyToRun=false
+
+      # 7. Setup WiX Toolset
+      - name: Setup WiX Toolset CLI
+        run: |
+          dotnet tool install --global wix
+          wix extension add WixToolset.UI.wixext
+          wix extension add WixToolset.Util.wixext
+
+      # 8. Compile the MSI Installer Package using WiX
+      - name: Build MSI Package
+        run: |
+          wix build setup.wxs -arch x64 -ext WixToolset.UI.wixext -ext WixToolset.Util.wixext -o TersErpSetup.msi
+
+      # 9. Dynamic Renaming Linked to Tag Version
+      - name: Rename MSI to Include Tag Version
+        shell: pwsh
+        run: |
+          $tagVersion = "${{ github.ref_name }}"
+          $newMsiName = "TersErpSetup-$tagVersion.msi"
+          Rename-Item -Path "TersErpSetup.msi" -NewName $newMsiName
+          Write-Host "Successfully renamed MSI package to: $newMsiName"
+          # Store the renamed MSI file name for use in the release step
+          echo "MSI_ASSET_NAME=$newMsiName" >> $env:GITHUB_ENV
+
+      # 10. Generate and Upload to GitHub Release
+      - name: Create GitHub Release and Upload Installer Asset
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Ters ERP ${{ github.ref_name }} 🚀
+          body: |
+            # Ters ERP ${{ github.ref_name }} 🚀
+
+            We are thrilled to release the new bilingual desktop & local intranet service edition of **Ters ERP**! 
+            يسعدنا إطلاق النسخة البرمجية المحلية المتكاملة وثنائية اللغة لنظام **ترس المحاسبي**!
+
+            ---
+
+            ## 🛠️ Installation Guide | دليل التثبيت السريع
+            1. Download the installer file below: **`${{ env.MSI_ASSET_NAME }}`**
+               قم بتحميل ملف التثبيت المرفق أدناه: **`${{ env.MSI_ASSET_NAME }}`**
+            2. Run the installer to register the background service (requires zero dependencies or pre-installed runtimes).
+               قم بتشغيل معالج التثبيت لتهيئة الخدمة صامتاً (لا يتطلب أي برمجيات أو رن تايمز مثبتة مسبقاً).
+            3. Double-click the desktop shortcut "Ters ERP" to launch the browser dynamically to the active portal wizard!
+               اضغط على أيقونة سطح المكتب "ترس المحاسبي" لبدء الإعداد فوراً وبدون أي شاشات سوداء!
+
+            ---
+
+            ## 📚 Advanced Enterprise Guides | أدلة الشركات المتقدمة
+            * For setting up custom hostnames and SSL certificates (e.g., `https://ters-erp.yourdomain.com`), please refer to our:
+              [Custom Domain & Reverse Proxy Setup Guide (IIS & Nginx)](docs/reverse_proxy_setup.md)
+            * لإعداد نطاق مخصص وشهادة أمان مشفرة لشركتك، يرجى مراجعة:
+              [دليل إعداد النطاق المخصص والخادم الوكيل العكسي](docs/reverse_proxy_setup.md)
+          files: |
+            ${{ env.MSI_ASSET_NAME }}
+          draft: false
+          prerelease: false
