@@ -1,0 +1,25 @@
+# Configuration for Automated GitHub Release Notes
+changelog:
+  exclude:
+    labels:
+      - ignore-for-release
+  categories:
+    - title: "🚀 What Changed"
+      labels:
+        - feature
+        - feat
+        - enhancement
+    - title: "🐛 Bug Fixes & Stability"
+      labels:
+        - bug
+        - fix
+        - hotfix
+    - title: "📚 Documentation"
+      labels:
+        - documentation
+        - docs
+    - title: "🧹 Refactor & Chore"
+      labels:
+        - chore
+        - refactor
+        - build
