@@ -9,8 +9,7 @@ import {
   DollarSign, 
   Printer, 
   X, 
-  Trash2,
-  QrCode
+  Trash2
 } from 'lucide-react';
 import QRCode from 'qrcode';
 
