@@ -76,20 +76,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           name: Ters ERP ${{ github.ref_name }} 🚀
-          body: |
-            ## 🛠️ Quick Installation Guide | دليل التثبيت السريع
-            1. Download the installer file below: **`${{ env.MSI_ASSET_NAME }}`**
-               قم بتحميل ملف التثبيت المرفق أدناه: **`${{ env.MSI_ASSET_NAME }}`**
-            2. Run the installer to register the background service (requires zero dependencies).
-               قم بتشغيل معالج التثبيت لتهيئة الخدمة صامتاً (لا يتطلب أي برمجيات مسبقة).
-            3. Launch the desktop shortcut "Ters ERP" to start!
-               اضغط على أيقونة سطح المكتب "ترس المحاسبي" لبدء الإعداد فوراً وبدون أي شاشات سوداء!
-
-            ---
-
-            ## 📚 Advanced Enterprise Guides | أدلة الشركات المتقدمة
-            * Setup custom hostnames: [Custom Domain & Reverse Proxy Guide (IIS & Nginx)](docs/reverse_proxy_setup.md)
-            * لإعداد نطاق مخصص وشهادة أمان: [دليل النطاق المخصص والخادم الوكيل العكسي](docs/reverse_proxy_setup.md)
+          body: ""
           files: |
             ${{ env.MSI_ASSET_NAME }}
           generate_release_notes: true
