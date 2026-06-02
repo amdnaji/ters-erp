@@ -76,7 +76,9 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           name: Ters ERP ${{ github.ref_name }} 🚀
-          body: ""
+          body: |
+            ## 📦 Assets & Installation (WiX Setup)
+            * **`${{ env.MSI_ASSET_NAME }}`** - Silent Windows Installer (WiX Toolset Package).
           files: |
             ${{ env.MSI_ASSET_NAME }}
           generate_release_notes: true
