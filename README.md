@@ -2,6 +2,10 @@
 ### Modern, Lightweight, Bilingual ERP Suite for SMEs
 ### نظام تخطيط موارد المؤسسات الحديث والمبتكر للمنشآت الصغيرة والمتوسطة
 
+![Ters ERP Dashboard Preview](docs/ters_erp_dashboard.png)
+![Ters ERP ZATCA Onboarding Settings](docs/ters_erp_settings.png)
+
+
 Ters ERP is a state-of-the-art, open-source Enterprise Resource Planning suite optimized for Small and Medium Enterprises (SMEs). Built with absolute bilingual isolation (Arabic & English), dynamic multi-tenancy (SaaS), and seamless database support, it provides high-performance double-entry financial controls with zero installation friction.
 
 نظام **ترس المحاسبي** هو نظام متطور ومتكامل لتخطيط موارد المؤسسات (ERP)، مصمم خصيصاً لتلبية احتياجات المنشآت الصغيرة والمتوسطة. يتميز النظام بدعم كامل لعزل اللغتين (العربية والإنجليزية) بشكل نظيف، وتعدد المستأجرين (SaaS)، مع واجهات استخدام حديثة وأداء مالي دقيق قائم على مبادئ المحاسبة المزدوجة القياسية.
@@ -77,7 +81,8 @@ npm run dev
 
 ## 📚 Documentation & Advanced Guides | المستندات والأدلة المتقدمة
 
-* **[Custom Domain & Reverse Proxy Setup Guide (Option 2)](docs/reverse_proxy_setup.md)**: A complete step-by-step guide with ready-to-use IIS and Nginx scripts to bind your local Ters ERP service to a custom domain (e.g., `https://ters-erp.yourdomain.com`).
+* **[ZATCA E-Invoicing Integration Guide | دليل إعداد الفاتورة الإلكترونية](docs/zatca_setup.md)**: Step-by-step setup guide for ZATCA Phase 1 & 2 integration, CSR generation, and onboarding.
+* **[Custom Domain & Reverse Proxy Setup Guide](docs/reverse_proxy_setup.md)**: A complete step-by-step guide with ready-to-use IIS and Nginx scripts to bind your local Ters ERP service to a custom domain (e.g., `https://ters-erp.yourdomain.com`).
 * **[دليل إعداد النطاق المخصص والخادم الوكيل العكسي](docs/reverse_proxy_setup.md)**: دليل إعداد خطوة بخطوة باللغة الإنجليزية مع السكربتات البرمجية الجاهزة لخوادم IIS و Nginx لربط خادم نظام ترس المحاسبي بنطاق مخصص لشركتك.
 
 ---

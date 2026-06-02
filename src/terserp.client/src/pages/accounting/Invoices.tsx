@@ -12,6 +12,7 @@ import {
   Trash2,
   QrCode
 } from 'lucide-react';
+import QRCode from 'qrcode';
 
 interface InvoicesProps {
   lang: 'ar' | 'en';
@@ -43,6 +44,7 @@ interface InvoiceDto {
   isPaid: boolean;
   notes: string;
   lines: InvoiceLineDto[];
+  qrCode?: string;
 }
 
 const translations = {
@@ -160,6 +162,17 @@ export const Invoices: React.FC<InvoicesProps> = ({ lang }) => {
 
   // Invoice Details Modal
   const [selectedInvoice, setSelectedInvoice] = useState<InvoiceDto | null>(null);
+  const [qrDataUrl, setQrDataUrl] = useState<string>('');
+
+  useEffect(() => {
+    if (selectedInvoice && selectedInvoice.qrCode) {
+      QRCode.toDataURL(selectedInvoice.qrCode)
+        .then(url => setQrDataUrl(url))
+        .catch(err => console.error('Error generating QR code:', err));
+    } else {
+      setQrDataUrl('');
+    }
+  }, [selectedInvoice]);
 
   const loadData = async () => {
     setLoading(true);
@@ -709,15 +722,21 @@ export const Invoices: React.FC<InvoicesProps> = ({ lang }) => {
                   </div>
                 </div>
 
-                {/* ZATCA Cryptographic QR Code Mockup */}
-                <div className="flex flex-col items-center justify-center gap-2 border-t border-gray-100 dark:border-gray-800/80 pt-4">
-                  <div className="p-3 bg-white border border-gray-150 rounded-xl shadow-sm">
-                    <QrCode className="w-24 h-24 text-gray-900" />
+                {/* ZATCA Cryptographic QR Code */}
+                {selectedInvoice.qrCode && (
+                  <div className="flex flex-col items-center justify-center gap-2 border-t border-gray-100 dark:border-gray-800/80 pt-4 print:pt-4">
+                    <div className="p-3 bg-white border border-gray-150 rounded-xl shadow-sm">
+                      {qrDataUrl ? (
+                        <img src={qrDataUrl} className="w-24 h-24" alt="ZATCA QR Code" />
+                      ) : (
+                        <div className="w-24 h-24 bg-gray-100 animate-pulse rounded-lg" />
+                      )}
+                    </div>
+                    <span className="text-[8px] text-gray-400 font-bold max-w-[200px] text-center leading-relaxed select-none">
+                      {t.qrText}
+                    </span>
                   </div>
-                  <span className="text-[8px] text-gray-400 font-bold max-w-[200px] text-center leading-relaxed select-none">
-                    {t.qrText}
-                  </span>
-                </div>
+                )}
               </div>
 
               {/* Action Buttons */}

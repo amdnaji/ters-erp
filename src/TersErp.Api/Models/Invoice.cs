@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TersErp.Api.Models;
 
@@ -16,4 +17,7 @@ public class Invoice : BaseEntity
     public bool IsPaid { get; set; }
     public string Notes { get; set; } = string.Empty;
     public ICollection<InvoiceLine> Lines { get; set; } = new List<InvoiceLine>();
+
+    [NotMapped]
+    public string? QrCode { get; set; }
 }

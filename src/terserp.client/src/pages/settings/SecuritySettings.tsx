@@ -11,7 +11,9 @@ import {
   RefreshCw, 
   Save, 
   UserCheck, 
-  Info
+  Info,
+  Building,
+  Globe
 } from 'lucide-react';
 
 interface SecuritySettingsProps {
@@ -87,6 +89,14 @@ const translations = {
     scopeJournalEntries: 'القيود المحاسبية اليومية',
     scopeUsers: 'إدارة الموظفين والصلاحيات',
     scopeCompanySettings: 'إعدادات المنشأة والمستأجر',
+    tabCompany: 'إعدادات المنشأة والربط الضريبي',
+    vatNumberLabel: 'الرقم الضريبي للمنشأة (15 خانة)',
+    enableZatcaLabel: 'تفعيل الفاتورة الإلكترونية السعودية (ZATCA Phase 1)',
+    companyNameLabel: 'اسم المنشأة/الشركة',
+    saveCompanyBtn: 'حفظ إعدادات المنشأة',
+    saveCompanySuccess: 'تم تحديث ملف المنشأة وإعدادات ZATCA بنجاح.',
+    vatPlaceholder: 'ادخل الرقم الضريبي المكون من 15 رقم',
+    zatcaDescription: 'عند التفعيل، سيتم تلقائياً تشفير الفواتير وتوليد رمز استجابة سريع (QR Code) متوافق تماماً مع متطلبات هيئة الزكاة والضريبة والجمارك لعرضه في نماذج الطباعة والفواتير المبسطة والضريبية.',
   },
   en: {
     title: 'Security & Permissions Control Panel',
@@ -132,6 +142,14 @@ const translations = {
     scopeJournalEntries: 'Double-Entry Journal Vouchers',
     scopeUsers: 'Employee Security & Permissions',
     scopeCompanySettings: 'Tenant & Company Settings',
+    tabCompany: 'Company Profile & ZATCA',
+    vatNumberLabel: 'Vat Registration Number (15 Digits)',
+    enableZatcaLabel: 'Enable Saudi E-Invoicing Compliance (ZATCA Phase 1)',
+    companyNameLabel: 'Company / Organization Name',
+    saveCompanyBtn: 'Save Settings',
+    saveCompanySuccess: 'Company profile & ZATCA configurations updated successfully.',
+    vatPlaceholder: 'e.g. 300012345600003',
+    zatcaDescription: 'When enabled, the system will automatically compute ZATCA TLV-encoded QR codes for invoices, rendering them on printable simplified/tax invoices as required by the Zakat, Tax and Customs Authority.',
   }
 };
 
@@ -144,7 +162,7 @@ const scopeTranslations = {
 
 export const SecuritySettings: React.FC<SecuritySettingsProps> = ({ lang }) => {
   const t = translations[lang];
-  const [activeTab, setActiveTab] = useState<'roles' | 'users'>('roles');
+  const [activeTab, setActiveTab] = useState<'roles' | 'users' | 'company'>('roles');
   
   // Data State
   const [roles, setRoles] = useState<TenantRoleDto[]>([]);
@@ -168,6 +186,15 @@ export const SecuritySettings: React.FC<SecuritySettingsProps> = ({ lang }) => {
   const [newUserPassword, setNewUserPassword] = useState('');
   const [newUserRoleId, setNewUserRoleId] = useState('');
 
+  // Company Settings State
+  const [companyName, setCompanyName] = useState('');
+  const [companyVat, setCompanyVat] = useState('');
+  const [enableZatca, setEnableZatca] = useState(false);
+  const [generatedCsr, setGeneratedCsr] = useState('');
+  const [otpCode, setOtpCode] = useState('');
+  const [hasCertificate, setHasCertificate] = useState(false);
+  const [zatcaEnvironment, setZatcaEnvironment] = useState('Sandbox');
+
   const loadData = async () => {
     setLoading(true);
     setError(null);
@@ -179,6 +206,18 @@ export const SecuritySettings: React.FC<SecuritySettingsProps> = ({ lang }) => {
       
       setRoles(rolesRes.data);
       setUsers(usersRes.data);
+      
+      // Load company details
+      try {
+        const companyRes = await axios.get('/api/company');
+        setCompanyName(companyRes.data.name);
+        setCompanyVat(companyRes.data.vatNumber || '');
+        setEnableZatca(companyRes.data.enableZatca);
+        setZatcaEnvironment(companyRes.data.zatcaEnvironment || 'Sandbox');
+        setHasCertificate(companyRes.data.hasCertificate);
+      } catch (companyErr) {
+        // Fallback or ignore if not initialized
+      }
       
       // Auto-select first role if none selected or keep previously selected by ID
       if (rolesRes.data.length > 0) {
@@ -237,6 +276,70 @@ export const SecuritySettings: React.FC<SecuritySettingsProps> = ({ lang }) => {
       await axios.put(`/api/security/roles/${selectedRole.id}`, payload);
       setSuccessMsg(t.saveRoleSuccess);
       loadData();
+      setSubmitting(false);
+    } catch (err: any) {
+      setSubmitting(false);
+      setError(err.response?.data?.message || err.message || t.errorDefault);
+    }
+  };
+
+  // Submit company settings changes
+  const handleSaveCompany = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+    setError(null);
+    setSuccessMsg(null);
+    try {
+      await axios.put('/api/company', {
+        name: companyName,
+        vatNumber: companyVat,
+        enableZatca: enableZatca,
+        zatcaEnvironment: zatcaEnvironment
+      });
+      setSuccessMsg(t.saveCompanySuccess);
+      setSubmitting(false);
+    } catch (err: any) {
+      setSubmitting(false);
+      setError(err.response?.data?.message || err.message || t.errorDefault);
+    }
+  };
+
+  // CSR Generation
+  const handleGenerateCsr = async () => {
+    setSubmitting(true);
+    setError(null);
+    setSuccessMsg(null);
+    try {
+      const res = await axios.post('/api/company/generate-csr', {
+        registeredAddress: 'Riyadh, KSA',
+        businessCategory: 'Retail'
+      });
+      setGeneratedCsr(res.data.csrPem);
+      setSuccessMsg(lang === 'ar' ? 'تم توليد طلب توقيع الشهادة (CSR) بنجاح!' : 'CSR generated successfully!');
+      setSubmitting(false);
+    } catch (err: any) {
+      setSubmitting(false);
+      setError(err.response?.data?.message || err.message || t.errorDefault);
+    }
+  };
+
+  // CCSID Registration (Onboarding)
+  const handleRegisterCcsid = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!otpCode) return;
+    setSubmitting(true);
+    setError(null);
+    setSuccessMsg(null);
+    try {
+      const res = await axios.post('/api/company/register-ccsid', {
+        csrPem: generatedCsr,
+        otp: otpCode
+      });
+      setSuccessMsg(res.data.message);
+      setHasCertificate(true);
+      setZatcaEnvironment(res.data.environment);
+      setGeneratedCsr('');
+      setOtpCode('');
       setSubmitting(false);
     } catch (err: any) {
       setSubmitting(false);
@@ -425,10 +528,10 @@ export const SecuritySettings: React.FC<SecuritySettingsProps> = ({ lang }) => {
         )}
 
         {/* Tab Selector */}
-        <div className="flex border-b border-gray-200 dark:border-gray-800 gap-1.5 p-1 bg-white dark:bg-[#1a1b22] rounded-xl border border-gray-100 dark:border-gray-800/80 shadow-sm max-w-md">
+        <div className="flex border-b border-gray-200 dark:border-gray-800 gap-1.5 p-1 bg-white dark:bg-[#1a1b22] rounded-xl border border-gray-100 dark:border-gray-800/80 shadow-sm max-w-lg">
           <button
             onClick={() => setActiveTab('roles')}
-            className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer flex items-center justify-center gap-2 ${
+            className={`flex-1 py-2 px-3 text-xs font-bold rounded-lg transition-all cursor-pointer flex items-center justify-center gap-2 ${
               activeTab === 'roles'
                 ? 'bg-purple-600 text-white shadow'
                 : 'text-gray-500 hover:text-purple-600 dark:text-gray-400 dark:hover:text-purple-400'
@@ -439,7 +542,7 @@ export const SecuritySettings: React.FC<SecuritySettingsProps> = ({ lang }) => {
           </button>
           <button
             onClick={() => setActiveTab('users')}
-            className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer flex items-center justify-center gap-2 ${
+            className={`flex-1 py-2 px-3 text-xs font-bold rounded-lg transition-all cursor-pointer flex items-center justify-center gap-2 ${
               activeTab === 'users'
                 ? 'bg-purple-600 text-white shadow'
                 : 'text-gray-500 hover:text-purple-600 dark:text-gray-400 dark:hover:text-purple-400'
@@ -447,6 +550,17 @@ export const SecuritySettings: React.FC<SecuritySettingsProps> = ({ lang }) => {
           >
             <Users className="w-3.5 h-3.5" />
             <span>{t.tabUsers}</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('company')}
+            className={`flex-1 py-2 px-3 text-xs font-bold rounded-lg transition-all cursor-pointer flex items-center justify-center gap-2 ${
+              activeTab === 'company'
+                ? 'bg-purple-600 text-white shadow'
+                : 'text-gray-500 hover:text-purple-600 dark:text-gray-400 dark:hover:text-purple-400'
+            }`}
+          >
+            <Building className="w-3.5 h-3.5" />
+            <span>{t.tabCompany}</span>
           </button>
         </div>
 
@@ -739,6 +853,226 @@ export const SecuritySettings: React.FC<SecuritySettingsProps> = ({ lang }) => {
                 </table>
               </div>
             )}
+          </div>
+        )}
+
+        {/* TAB 3: Company & ZATCA Settings */}
+        {activeTab === 'company' && (
+          <div className="bg-white dark:bg-[#1a1b22] border border-gray-100 dark:border-gray-800/80 p-6 rounded-2xl shadow-xl space-y-6">
+            <h3 className="text-base font-black text-gray-900 dark:text-gray-100 flex items-center gap-2 border-b border-gray-50 dark:border-gray-800/60 pb-4">
+              <Building className="w-5 h-5 text-purple-500" />
+              <span>{t.tabCompany}</span>
+            </h3>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* Profile Config */}
+              <form onSubmit={handleSaveCompany} className="space-y-6">
+                {/* Company Name */}
+                <div className="space-y-1">
+                  <label className="block text-xs font-black text-gray-700 dark:text-gray-300">
+                    {t.companyNameLabel} <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={companyName}
+                    onChange={(e) => setCompanyName(e.target.value)}
+                    className="w-full px-4 py-2.5 text-xs bg-gray-50 border border-gray-200 dark:bg-[#121318] dark:border-gray-800 dark:text-white rounded-xl outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all font-semibold"
+                  />
+                </div>
+
+                {/* ZATCA Toggle */}
+                <div className="p-4 bg-purple-50/30 dark:bg-purple-950/10 rounded-2xl border border-purple-100/50 dark:border-purple-900/30 space-y-3">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="space-y-1">
+                      <span className="text-xs font-black text-purple-950 dark:text-purple-300 block">
+                        {t.enableZatcaLabel}
+                      </span>
+                      <p className="text-[10px] text-purple-650 dark:text-purple-400 max-w-md leading-relaxed">
+                        {t.zatcaDescription}
+                      </p>
+                    </div>
+                    
+                    {/* Switch */}
+                    <button
+                      type="button"
+                      onClick={() => setEnableZatca(!enableZatca)}
+                      className={`w-12 h-6 flex items-center rounded-full p-1 cursor-pointer transition-all duration-300 outline-none ${
+                        enableZatca ? 'bg-purple-600' : 'bg-gray-300 dark:bg-gray-700'
+                      }`}
+                    >
+                      <div
+                        className={`bg-white w-4.5 h-4.5 rounded-full shadow-md transform transition-transform duration-300 ${
+                          enableZatca ? (lang === 'ar' ? '-translate-x-6' : 'translate-x-6') : 'translate-x-0'
+                        }`}
+                      />
+                    </button>
+                  </div>
+
+                  {/* VAT Number */}
+                  {enableZatca && (
+                    <div className="space-y-1 pt-3 border-t border-purple-100/40 dark:border-purple-900/40 animate-slide-down">
+                      <label className="block text-xs font-black text-gray-750 dark:text-gray-300">
+                        {t.vatNumberLabel} <span className="text-rose-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        required={enableZatca}
+                        value={companyVat}
+                        onChange={(e) => setCompanyVat(e.target.value.replace(/\D/g, '').substring(0, 15))}
+                        placeholder={t.vatPlaceholder}
+                        className="w-full px-4 py-2.5 text-xs bg-white border border-purple-200 dark:bg-[#121318] dark:border-gray-800 dark:text-white rounded-xl outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all font-mono font-bold"
+                      />
+                    </div>
+                  )}
+
+                  {/* ZATCA Environment Selection */}
+                  {enableZatca && (
+                    <div className="space-y-1 pt-3">
+                      <label className="block text-xs font-black text-gray-770 dark:text-gray-300">
+                        {lang === 'ar' ? 'بيئة العمل (ZATCA Environment)' : 'ZATCA Environment'}
+                      </label>
+                      <select
+                        value={zatcaEnvironment}
+                        onChange={(e) => setZatcaEnvironment(e.target.value)}
+                        className="w-full px-3 py-2 text-xs bg-white border border-purple-200 dark:bg-[#121318] dark:border-gray-800 dark:text-white rounded-xl outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all font-bold cursor-pointer"
+                      >
+                        <option value="Sandbox">Sandbox (الاختبار والتأهيل)</option>
+                        <option value="Simulation">Simulation (محاكاة التشغيل)</option>
+                        <option value="Production">Production (البيئة الإنتاجية الحية)</option>
+                      </select>
+                    </div>
+                  )}
+                </div>
+
+                {/* Submit button */}
+                <div className="pt-2">
+                  <button
+                    type="submit"
+                    disabled={submitting}
+                    className="py-2.5 px-6 bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs sm:text-sm rounded-xl transition-all shadow-md shadow-purple-500/10 hover:shadow-purple-500/20 flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                  >
+                    {submitting ? (
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                    ) : (
+                      <>
+                        <Save className="w-4 h-4" />
+                        <span>{t.saveCompanyBtn}</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+
+              {/* ZATCA Onboarding Wizard (Phase 2) */}
+              {enableZatca && (
+                <div className="p-5 bg-gray-50/50 dark:bg-gray-900/30 rounded-3xl border border-gray-150 dark:border-gray-800 space-y-5">
+                  <h4 className="text-xs font-black text-gray-500 dark:text-gray-400 uppercase tracking-wider flex items-center gap-2">
+                    <Globe className="w-4.5 h-4.5 text-purple-500" />
+                    <span>{lang === 'ar' ? 'لوحة تأهيل المنشأة (ZATCA Onboarding)' : 'ZATCA Onboarding Portal'}</span>
+                  </h4>
+
+                  {/* Status Indicator */}
+                  <div className="flex items-center justify-between p-3.5 bg-white dark:bg-[#121318] rounded-2xl border border-gray-100 dark:border-gray-850">
+                    <span className="text-xs font-bold text-gray-500">{lang === 'ar' ? 'حالة الربط:' : 'Connection Status:'}</span>
+                    {hasCertificate ? (
+                      <span className="px-3 py-1 text-[10px] font-black bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 rounded-full border border-emerald-100 dark:border-emerald-900/30 flex items-center gap-1">
+                        <CheckCircle className="w-3.5 h-3.5" />
+                        <span>{lang === 'ar' ? `مكتمل (${zatcaEnvironment})` : `Active (${zatcaEnvironment})`}</span>
+                      </span>
+                    ) : (
+                      <span className="px-3 py-1 text-[10px] font-black bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 rounded-full border border-amber-100 dark:border-amber-900/30 flex items-center gap-1">
+                        <AlertCircle className="w-3.5 h-3.5 animate-pulse" />
+                        <span>{lang === 'ar' ? 'غير موثق (تأهيل مطلوب)' : 'Not Configured (Onboarding Required)'}</span>
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Onboarding Steps */}
+                  {!hasCertificate && (
+                    <div className="space-y-4">
+                      {/* Step 1: CSR */}
+                      {!generatedCsr ? (
+                        <div className="space-y-2">
+                          <p className="text-[11px] text-gray-500 dark:text-gray-400 leading-relaxed">
+                            {lang === 'ar' 
+                              ? 'الخطوة 1: قم بتوليد طلب توقيع الشهادة (CSR) المشفر لإرساله للهيئة.' 
+                              : 'Step 1: Generate cryptographic Certificate Signing Request (CSR) to send to ZATCA.'}
+                          </p>
+                          <button
+                            type="button"
+                            onClick={handleGenerateCsr}
+                            disabled={submitting || !companyVat}
+                            className="w-full py-2 bg-white hover:bg-gray-100 border border-purple-200 dark:bg-gray-850 dark:hover:bg-gray-800 dark:border-gray-800 text-purple-600 dark:text-purple-400 font-bold text-xs rounded-xl transition-all cursor-pointer disabled:opacity-50"
+                          >
+                            {lang === 'ar' ? 'توليد ملف طلب التوقيع CSR' : 'Generate CSR File'}
+                          </button>
+                        </div>
+                      ) : (
+                        <form onSubmit={handleRegisterCcsid} className="space-y-4 animate-scale-in">
+                          {/* Display CSR */}
+                          <div className="space-y-1">
+                            <label className="block text-[10px] font-bold text-gray-400 uppercase">CSR PEM Data</label>
+                            <textarea
+                              readOnly
+                              value={generatedCsr}
+                              rows={5}
+                              className="w-full p-2.5 text-[9px] bg-white border border-gray-200 dark:bg-[#121318] dark:border-gray-850 dark:text-gray-400 rounded-xl font-mono outline-none resize-none"
+                            />
+                          </div>
+
+                          {/* OTP Input */}
+                          <div className="space-y-1">
+                            <label className="block text-xs font-black text-gray-700 dark:text-gray-300">
+                              {lang === 'ar' ? 'رمز تفعيل الهيئة (OTP)' : 'ZATCA Portal OTP'} <span className="text-rose-500">*</span>
+                            </label>
+                            <input
+                              type="text"
+                              required
+                              value={otpCode}
+                              onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').substring(0, 6))}
+                              placeholder="e.g. 123456"
+                              className="w-full px-4 py-2 text-xs bg-white border border-purple-200 dark:bg-[#121318] dark:border-gray-800 dark:text-white rounded-xl outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all font-mono font-bold"
+                            />
+                            <p className="text-[9px] text-gray-400 dark:text-gray-500">
+                              {lang === 'ar' ? 'توليد الرمز من بوابة (فاتورة) التابعة للهيئة.' : 'Generate this 6-digit OTP code from ZATCA Fatoora Portal.'}
+                            </p>
+                          </div>
+
+                          {/* Complete Onboarding Button */}
+                          <button
+                            type="submit"
+                            disabled={submitting || !otpCode}
+                            className="w-full py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs rounded-xl transition-all shadow-md shadow-purple-500/10 flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+                          >
+                            {lang === 'ar' ? 'توثيق وتنشيط الربط بالهيئة' : 'Submit & Activate Connection'}
+                          </button>
+                        </form>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Reset Certificate (If already onboarded) */}
+                  {hasCertificate && (
+                    <div className="pt-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (window.confirm(lang === 'ar' ? 'هل أنت متأكد من رغبتك في إعادة ربط المنشأة وتأهيلها؟' : 'Are you sure you want to re-onboard the company?')) {
+                            setHasCertificate(false);
+                            setGeneratedCsr('');
+                          }
+                        }}
+                        className="w-full py-2 bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-600 dark:bg-rose-950/20 dark:hover:bg-rose-950/40 dark:border-rose-900/40 dark:text-rose-400 font-bold text-xs rounded-xl transition-all cursor-pointer"
+                      >
+                        {lang === 'ar' ? 'إعادة ربط وتأهيل المنشأة' : 'Reset / Re-onboard Company'}
+                      </button>
+                    </div>
+                  )}
+
+                </div>
+              )}
+            </div>
           </div>
         )}
 

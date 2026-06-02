@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TersErp.Api.Data;
 
@@ -10,9 +11,11 @@ using TersErp.Api.Data;
 namespace TersErp.Api.Data.Migrations
 {
     [DbContext(typeof(TersDbContext))]
-    partial class TersDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260602204057_AddZatcaFieldsToTenant")]
+    partial class AddZatcaFieldsToTenant
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.16");
@@ -845,26 +848,6 @@ namespace TersErp.Api.Data.Migrations
                     b.Property<string>("VatNumber")
                         .HasColumnType("TEXT")
                         .HasColumnName("vat_number");
-
-                    b.Property<string>("ZatcaCertificate")
-                        .HasColumnType("TEXT")
-                        .HasColumnName("zatca_certificate");
-
-                    b.Property<string>("ZatcaEnvironment")
-                        .HasColumnType("TEXT")
-                        .HasColumnName("zatca_environment");
-
-                    b.Property<int>("ZatcaInvoiceCounter")
-                        .HasColumnType("INTEGER")
-                        .HasColumnName("zatca_invoice_counter");
-
-                    b.Property<string>("ZatcaPrivateKey")
-                        .HasColumnType("TEXT")
-                        .HasColumnName("zatca_private_key");
-
-                    b.Property<string>("ZatcaSecret")
-                        .HasColumnType("TEXT")
-                        .HasColumnName("zatca_secret");
 
                     b.HasKey("Id")
                         .HasName("pk_tenant");

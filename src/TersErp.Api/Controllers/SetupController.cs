@@ -136,7 +136,9 @@ public class SetupController : ControllerBase
             {
                 Id = Guid.CreateVersion7(),
                 Name = dto.CompanyName,
-                TenantCode = dto.TenantCode
+                TenantCode = dto.TenantCode,
+                VatNumber = dto.VatNumber,
+                EnableZatca = dto.EnableZatca
             };
             dbContext.Tenants.Add(tenant);
             await dbContext.SaveChangesAsync();
@@ -204,6 +206,10 @@ public class SetupInitializeDto
 
     [Required]
     public string TenantCode { get; set; } = string.Empty;
+
+    public string? VatNumber { get; set; }
+
+    public bool EnableZatca { get; set; } = false;
 
     [Required]
     [EmailAddress]
